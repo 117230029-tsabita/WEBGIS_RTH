@@ -449,44 +449,17 @@
   // OPEN APP
   // ============================================================
 
- function openMap() {
-
-  // sembunyikan landing
-  document.getElementById('landing').style.display = 'none';
-
-  // tampilkan app
-  document.getElementById('app').style.display = 'block';
-
-  // paksa leaflet render ulang setelah DOM muncul
-  setTimeout(() => {
-
-    map.invalidateSize(true);
-
-    // paksa redraw
-    map.eachLayer(function(layer){
-      if(layer.redraw){
-        layer.redraw();
+function openMap() {
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    setTimeout(() => {
+      map.invalidateSize();
+      if (rthLayer && rthLayer.getBounds().isValid()) {
+        map.fitBounds(rthLayer.getBounds(), { padding: [50, 50] });
       }
-    });
-
-    // zoom ke Bandung
-    if (rthLayer && rthLayer.getBounds().isValid()) {
-
-      map.fitBounds(
-        rthLayer.getBounds(),
-        { padding: [50, 50] }
-      );
-
-    } else {
-
-      // fallback kalau layer belum selesai load
-      map.setView([-6.9175, 107.6191], 12);
-
-    }
-
-  }, 500);
-}
-
+    }, 300);
+  }
+  
   // ============================================================
   // INISIALISASI MAP
   // ============================================================
@@ -1057,29 +1030,6 @@ function openInfo() {
 function closeInfo() {
   document.getElementById('infoModal').style.display = 'none';
 }
-// Tambahan Back Browser
-window.addEventListener('popstate', function () {
-
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('landing').style.display = 'flex';
-
-});
-
-window.addEventListener('load', function () {
-
-  if (location.hash === '#map') {
-
-    document.getElementById('landing').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 300);
-
-  }
-
-});
-
 </script>
 </script>
 </body>
