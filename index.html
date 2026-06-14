@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WebGIS Sebaran RTH Kota Bandung</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body { overflow: hidden; background: #f4f7fb; }
+
+    /* ========================= LANDING ========================= */
+    .landing {
+      position: relative;
+      height: 100vh;
+      background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)),
+                  url('assets/Kota-Bandung.jpeg');
+      background-size: cover;
+      background-position: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 40px;
+    }
+
+    .landing-header {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 80px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 50px;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+    }
+
+    .landing-logo { display: flex; align-items: center; gap: 15px; color: white; }
+    .landing-logo img { width: 45px; }
+    .landing-logo h2 { font-size: 24px; font-weight: 600; }
+    .landing-nav { color: white; font-size: 15px; font-weight: 500; }
+
+    .landing-content { max-width: 900px; }
+
+    .landing h1 {
+      font-size: 60px; line-height: 1.2;
+      margin-bottom: 20px; font-weight: 700;
+      text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .landing p { font-size: 18px; line-height: 1.8; margin-bottom: 30px; }
+
+    .btn {
+      padding: 15px 35px; border: none; border-radius: 10px;
+      background: #1f7a4d; color: white; font-size: 17px;
+      cursor: pointer; transition: 0.3s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn:hover { background: #145c39; transform: translateY(-3px); }
+
+    .landing-footer {
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; padding: 18px;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(5px);
+      color: white; text-align: center;
+    }
+    .landing-footer p { font-size: 14px; letter-spacing: 0.5px; }
+
+    /* ========================= APP ========================= */
+    #app { display: none; width: 100%; height: 100vh; }
+
+    .header {
+      height: 75px; background: white;
+      display: flex; align-items: center; justify-content: center; gap: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      position: relative; z-index: 999;
+    }
+    .header img { width: 45px; }
+    .header h2 { font-size: 28px; color: #2d3436; }
+
+    .container { display: flex; height: calc(100vh - 75px); }
+
+    /* ========================= SIDEBAR ========================= */
+    .sidebar {
+      width: 350px; background: #f7f9fc;
+      overflow-y: auto; padding: 20px;
+      border-right: 1px solid #ddd;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+    .sidebar h3 { color: #0f5e3a; }
+
+    .card {
+      background: white; padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .card h4 { margin-bottom: 15px; color: #222; }
+
+    .sidebar button, .sidebar input[type=range] {
+      width: 100%; padding: 12px;
+      border-radius: 10px; margin-top: 10px; font-size: 15px;
+    }
+    .sidebar button {
+      border: none; background: #1877b7;
+      color: white; cursor: pointer; transition: 0.3s;
+    }
+    .sidebar button:hover { background: #12598a; }
+    .sidebar input[type=range] { padding: 6px 0; border: none; background: none; }
+
+    /* Layer Checkbox */
+    #layerControl { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+
+    .layer-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: #f7f9fc; border: 1px solid #e1e7ef;
+      border-radius: 10px; cursor: pointer; transition: 0.2s ease;
+    }
+    .layer-item:hover { background: #eef5ef; border-color: #0f5e3a; }
+    .layer-item input[type="checkbox"] {
+      width: 18px; height: 18px; margin: 0;
+      accent-color: #0f5e3a; cursor: pointer;
+    }
+    .layer-item span { font-size: 14px; font-weight: 500; color: #2d3436; }
+
+    /* ========================= INFO BUTTON ========================= */
+
+.info-btn{
+  position: absolute;
+  right: 25px;
+
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%;
+
+  background: #0f5e3a;
+  color: white;
+
+  font-size: 20px;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+}
+
+.info-btn:hover{
+  background: #18784b;
+  transform: scale(1.08);
+}
+
+/* ========================= INFO MODAL ========================= */
+
+.info-modal{
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0,0,0,0.45);
+
+  justify-content: center;
+  align-items: center;
+}
+
+.info-content{
+  background: white;
+
+  width: 600px;
+  max-width: 90%;
+
+  max-height: 80vh; /* tinggi maksimal popup */
+  overflow-y: auto; /* bisa scroll ke bawah */
+
+  padding: 30px;
+  border-radius: 18px;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+
+  position: relative;
+}
+
+.info-content h2{
+  color: #0f5e3a;
+  margin-bottom: 15px;
+}
+
+.info-content p{
+  color: #444;
+  line-height: 1.8;
+  margin-bottom: 15px;
+  text-align: justify;
+}
+
+.close-info{
+  position: sticky;
+  top: 0;
+  float: right;
+
+  font-size: 28px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-info:hover{
+  color: #000;
+}
+    /* ========================= MAP ========================= */
+    #map { flex: 1; height: 100%; }
+
+    /* ========================= LEGEND ========================= */
+    .legend {
+      background: white; padding: 14px;
+      border-radius: 14px; line-height: 22px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.18);
+      max-width: 220px; max-height: 340px;
+      overflow-y: auto; font-size: 13px;
+    }
+    .legend b { display: block; margin-top: 8px; margin-bottom: 4px; color: #0f5e3a; }
+    .legend b:first-child { margin-top: 0; }
+    .legend i {
+      width: 14px; height: 14px;
+      display: inline-block; margin-right: 6px;
+      border-radius: 3px; vertical-align: middle;
+    }
+
+    /* ========================= TEAM ========================= */
+    .team { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .team div { background: #eef5ef; padding: 10px; border-radius: 10px; font-size: 14px; }
+
+    /* ========================= MOBILE ========================= */
+    @media(max-width:900px){
+      .container { flex-direction: column; }
+      .sidebar { width: 100%; height: 45%; }
+      #map { height: 55%; }
+      .landing h1 { font-size: 38px; }
+      .landing-header { padding: 0 20px; }
+      .landing-logo h2 { font-size: 18px; }
+      .landing-nav { font-size: 12px; }
+    }
+  </style>
+</head>
+<!-- ========================= INFO MODAL ========================= -->
+<div id="infoModal" class="info-modal">
+
+  <div class="info-content">
+
+    <span class="close-info" onclick="closeInfo()">
+      &times;
+    </span>
+
+    <h2>🌳 Tentang Ruang Terbuka Hijau (RTH)</h2>
+
+    <p>
+      Ruang Terbuka Hijau (RTH) merupakan area memanjang atau mengelompok
+      yang penggunaannya bersifat terbuka dan ditumbuhi vegetasi, baik
+      alami maupun yang sengaja ditanam. RTH berfungsi sebagai kawasan
+      ekologis, sosial, estetika, serta penunjang kualitas lingkungan
+      perkotaan.
+    </p>
+
+    <p>
+  Kota Bandung memiliki luas wilayah sekitar
+  <b>167,3 km² (16.730 hektare)</b>, sementara luas Ruang Terbuka Hijau
+  (RTH) yang tersedia baru mencapai sekitar
+  <b>12,8%</b> atau sekitar <b>±2.100 hektare</b> dari total wilayah kota.
+  Angka tersebut masih berada di bawah ketentuan ideal berdasarkan
+  Undang-Undang Penataan Ruang yang menetapkan proporsi minimal
+  <b>30%</b> RTH untuk kawasan perkotaan.
+</p>
+
+<p>
+  Oleh karena itu, penambahan RTH di Kota Bandung masih diperlukan guna
+  meningkatkan kualitas lingkungan perkotaan, mengurangi suhu panas
+  perkotaan (<i>urban heat island</i>), meningkatkan resapan air untuk
+  mengurangi risiko banjir, memperbaiki kualitas udara, serta menyediakan
+  ruang publik yang sehat dan nyaman bagi masyarakat.
+</p>
+
+    <p>
+      Dalam WebGIS ini, ditampilkan persebaran titik RTH Kota Bandung,
+      prioritas pengembangan RTH, serta parameter pendukung seperti
+      NDVI, kemiringan lereng (slope), dan Thermal Humidity Index (THI)
+      sebagai dasar rekomendasi wilayah potensial RTH.
+    </p>
+
+  </div>
+
+</div>
+<body>
+
+<!-- ========================= LANDING ========================= -->
+<section class="landing" id="landing">
+
+  <div class="landing-header">
+    <div class="landing-logo">
+      <img src="assets/LOGOUPN.PNG">
+      <h2>WebGIS RTH Bandung</h2>
+    </div>
+    <div class="landing-nav">Kelompok 3 • Praktikum SIG Terapan</div>
+  </div>
+
+  <div class="landing-content">
+    <h1>Sebaran & Rekomendasi RTH Kota Bandung</h1>
+    <p>
+      WebGIS ini menampilkan Persebaran Ruang Terbuka Hijau (RTH), Prioritas Area untuk RTH,
+      Analisis radius, serta Routing lokasi berbasis GeoJSON di Kota Bandung.
+    </p>
+    <a href="#" class="btn" onclick="openMap()">Buka WebGIS</a>
+  </div>
+
+  <div class="landing-footer">
+    <p>© 2026 Kelompok 3 Praktikum SIG Terapan • WebGIS Sebaran RTH Kota Bandung</p>
+  </div>
+
+</section>
+
+<!-- ========================= APP ========================= -->
+<div id="app">
+
+<div class="header">
+
+  <img src="assets\BDG.png">
+
+  <h2>WebGIS RTH Kota Bandung</h2>
+
+  <button class="info-btn" onclick="openInfo()">
+    <i class="fa-solid fa-circle-info"></i>
+  </button>
+
+</div>
+
+  <div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <h3><i class="fa-solid fa-leaf"></i> Alat & Analisis</h3>
+
+      <!-- FILTER LAYER -->
+      <div class="card">
+        <h4>Filter Layer</h4>
+        <div id="layerControl">
+
+          <label class="layer-item">
+            <input type="checkbox" id="chkRTH" checked>
+            <span>Prioritas RTH</span>
+          </label>
+
+          <label class="layer-item">
+            <input type="checkbox" id="chkPoint" checked>
+            <span>Titik RTH</span>
+          </label>
+
+          <label class="layer-item">
+            <input type="checkbox" id="chkNDVI">
+            <span>NDVI</span>
+          </label>
+
+          <label class="layer-item">
+            <input type="checkbox" id="chkSlope">
+            <span>Slope</span>
+          </label>
+
+          <label class="layer-item">
+            <input type="checkbox" id="chkTHI">
+            <span>THI</span>
+          </label>
+
+        </div>
+      </div>
+
+      <!-- RADIUS -->
+      <div class="card">
+        <h4>Analisis Radius</h4>
+        <label>Radius (KM)</label>
+        <input type="range" id="radius" min="1" max="10" value="3">
+        <p><span id="radiusValue">3</span> KM</p>
+        <button onclick="findMyLocation()">Dari Lokasi Saya</button>
+        <button onclick="enablePickMode()">Pilih Titik di Peta</button>
+        <button onclick="clearAnalysis()">Hapus Analisis</button>
+      </div>
+
+      <!-- ROUTING -->
+      <div class="card">
+        <h4>Routing</h4>
+        <button onclick="enableRouting()">Buat Rute</button>
+        <button onclick="clearRoute()">Hapus Rute</button>
+      </div>
+
+      <!-- DOWNLOAD GEOJSON -->
+<div class="card">
+  <h4>Unduh Data</h4>
+
+  <button onclick="openGeoJSONDrive()">
+    📥 Unduh GeoJSON
+  </button>
+
+  <p style="
+    font-size:13px;
+    color:#666;
+    margin-top:10px;
+    text-align:center;
+    line-height:1.5;
+  ">
+    Klik tombol untuk membuka folder GeoJSON di Google Drive
+  </p>
+</div>
+
+      <!-- TEAM -->
+      <div class="card">
+        <h4>Anggota Kelompok</h4>
+        <div class="team">
+          <div>1. Azzahra Nisrina Iskandariah (117230006)</div>
+          <div>2. Tsabita Imanillah (117230029)</div>
+          <div>3. Rosalina Anggun Kusuma (117230078)</div>
+          <div>4. Adelia Aprilaviana Aziz (117230073)</div>
+          <div>5. Tsaqif Rajendra Alka (117230083)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+  </div>
+</div>
+
+<!-- ========================= SCRIPTS ========================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script>
+
+  // ============================================================
+  // OPEN APP
+  // ============================================================
+
+  function openMap() {
+    document.getElementById('landing').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    setTimeout(() => {
+      map.invalidateSize();
+      if (rthLayer && rthLayer.getBounds().isValid()) {
+        map.fitBounds(rthLayer.getBounds(), { padding: [50, 50] });
+      }
+    }, 300);
+  }
+
+  // ============================================================
+  // INISIALISASI MAP
+  // ============================================================
+
+  var map = L.map('map').setView([-6.9175, 107.6191], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19
+  }).addTo(map);
+
+  // ============================================================
+  // DEKLARASI VARIABEL LAYER — semua null dulu
+  // ============================================================
+
+  var rthLayer     = null;
+  var rthPointLayer= null;
+  var ndviLayer    = null;
+  var slopeLayer   = null;
+  var thiLayer     = null;
+
+  // ============================================================
+  // HELPER: tambah/hapus layer sesuai state checkbox
+  // ============================================================
+
+  function syncLayer(layer, checkboxId) {
+    if (!layer) return;
+    var isChecked = document.getElementById(checkboxId).checked;
+    if (isChecked && !map.hasLayer(layer)) {
+      map.addLayer(layer);
+    } else if (!isChecked && map.hasLayer(layer)) {
+      map.removeLayer(layer);
+    }
+  }
+
+  // ============================================================
+  // LEGEND — satu fungsi terpusat
+  // ============================================================
+
+  var legend = L.control({ position: 'bottomright' });
+
+  legend.onAdd = function () {
+    this._div = L.DomUtil.create('div', 'legend');
+    updateLegend();
+    return this._div;
+  };
+
+  legend.addTo(map);
+
+  function updateLegend() {
+    if (!legend._div) return;
+
+    var html = '';
+    var ada = false;
+
+    if (document.getElementById('chkRTH').checked) {
+      ada = true;
+      html += `
+        <b>Prioritas RTH</b>
+        <i style="background:#c30000"></i> Prioritas 1<br>
+        <i style="background:#fe631b"></i> Prioritas 2<br>
+        <i style="background:#ffee33"></i> Prioritas 3<br>
+      `;
+    }
+
+    if (document.getElementById('chkPoint').checked) {
+      ada = true;
+      html += `
+        <b>Titik RTH</b>
+        <i style="background:#0f5e3a;border-radius:50%;"></i> Titik RTH<br>
+      `;
+    }
+
+    if (document.getElementById('chkNDVI').checked) {
+      ada = true;
+      html += `
+        <b>NDVI</b>
+        <i style="background:#8B4513"></i> Sangat Rendah<br>
+        <i style="background:#FFD700"></i> Rendah<br>
+        <i style="background:#ADFF2F"></i> Sedang<br>
+        <i style="background:#32CD32"></i> Tinggi<br>
+        <i style="background:#006400"></i> Sangat Tinggi<br>
+      `;
+    }
+
+    if (document.getElementById('chkSlope').checked) {
+      ada = true;
+      html += `
+        <b>Slope</b>
+        <i style="background:#2ECC71"></i> Datar<br>
+        <i style="background:#A3E635"></i> Landai<br>
+        <i style="background:#FACC15"></i> Agak Curam<br>
+        <i style="background:#F97316"></i> Curam<br>
+        <i style="background:#DC2626"></i> Sangat Curam<br>
+      `;
+    }
+
+    if (document.getElementById('chkTHI').checked) {
+      ada = true;
+      html += `
+        <b>THI</b>
+        <i style="background:#2E86DE"></i> 24°C - 28°C<br>
+        <i style="background:#2ECC71"></i> 28°C - 32°C<br>
+        <i style="background:#F1C40F"></i> 32°C - 36°C<br>
+        <i style="background:#E67E22"></i> 36°C - 40°C<br>
+        <i style="background:#E74C3C"></i> 40°C - 46°C<br>
+      `;
+    }
+
+    legend._div.innerHTML = ada ? html : '<b style="color:#666">Tidak ada layer aktif</b>';
+  }
+
+  // ============================================================
+  // TOGGLE LAYER — satu fungsi, dipanggil dari semua checkbox
+  // ============================================================
+
+  function toggleLayer(layer, isChecked) {
+    if (!layer) return;
+    if (isChecked) {
+      if (!map.hasLayer(layer)) map.addLayer(layer);
+    } else {
+      if (map.hasLayer(layer)) map.removeLayer(layer);
+    }
+    updateLegend();
+  }
+
+  // Event listener checkbox
+  document.getElementById('chkRTH').addEventListener('change', function () {
+    toggleLayer(rthLayer, this.checked);
+  });
+  document.getElementById('chkPoint').addEventListener('change', function () {
+    toggleLayer(rthPointLayer, this.checked);
+  });
+  document.getElementById('chkNDVI').addEventListener('change', function () {
+    toggleLayer(ndviLayer, this.checked);
+  });
+  document.getElementById('chkSlope').addEventListener('change', function () {
+    toggleLayer(slopeLayer, this.checked);
+  });
+  document.getElementById('chkTHI').addEventListener('change', function () {
+    toggleLayer(thiLayer, this.checked);
+  });
+
+  // ============================================================
+  // WARNA HELPER
+  // ============================================================
+
+  function getColorRTH(prioritas) {
+    if (!prioritas) return '#808080';
+    switch (prioritas.toString().trim()) {
+      case 'Prioritas 1': return '#c30000';
+      case 'Prioritas 2': return '#fe631b';
+      case 'Prioritas 3': return '#ffee33';
+      default:            return '#808080';
+    }
+  }
+
+  function getColorNDVI(vegetasi) {
+    if (!vegetasi) return '#808080';
+    switch (vegetasi.toString().trim()) {
+      case 'Sangat Rendah': return '#8B4513';
+      case 'Rendah':        return '#FFD700';
+      case 'Sedang':        return '#ADFF2F';
+      case 'Tinggi':        return '#32CD32';
+      case 'Sangat Tinggi': return '#006400';
+      default:              return '#808080';
+    }
+  }
+
+  function getColorSlope(kemiringan) {
+    if (!kemiringan) return '#808080';
+    switch (kemiringan.toString().trim()) {
+      case 'Datar':        return '#2ECC71';
+      case 'Landai':       return '#A3E635';
+      case 'Agak Curam':   return '#FACC15';
+      case 'Curam':        return '#F97316';
+      case 'Sangat Curam': return '#DC2626';
+      default:             return '#808080';
+    }
+  }
+
+  function getColorTHI(suhu) {
+    if (!suhu) return '#808080';
+    switch (suhu.toString().trim()) {
+      case '24°C - 28°C': return '#2E86DE';
+      case '28°C - 32°C': return '#2ECC71';
+      case '32°C - 36°C': return '#F1C40F';
+      case '36°C - 40°C': return '#E67E22';
+      case '40°C - 46°C': return '#E74C3C';
+      default:            return '#808080';
+    }
+  }
+
+  // ============================================================
+  // LOAD LAYER — setelah fetch selesai, layer langsung di-sync
+  // ke kondisi checkbox saat itu
+  // ============================================================
+
+  // --- PRIORITAS RTH (Polygon) ---
+  fetch('assets/RTH_WGS.geojson')
+    .then(r => r.json())
+    .then(data => {
+
+      rthLayer = L.geoJSON(data, {
+
+        style: function (feature) {
+          return {
+            stroke: false,
+            fillColor: getColorRTH(feature.properties.Prioritas),
+            fillOpacity: 0.75
+          };
+        },
+
+        pointToLayer: function (feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 7,
+            fillColor: getColorRTH(feature.properties.Prioritas),
+            color: '#fff', weight: 1.5, fillOpacity: 1
+          });
+        },
+
+        onEachFeature: function (feature, layer) {
+          var p = feature.properties;
+          layer.bindPopup(`
+            <b>Data Prioritas RTH</b><hr>
+            <b>ID:</b> ${p.Id || '-'}<br>
+            <b>Gridcode:</b> ${p.gridcode || '-'}<br>
+            <b>Prioritas:</b> ${p.Prioritas || '-'}
+          `);
+        }
+
+      });
+
+      // Sync dengan state checkbox saat ini
+      syncLayer(rthLayer, 'chkRTH');
+
+      // Auto zoom pertama kali
+      if (rthLayer.getBounds().isValid()) {
+        map.fitBounds(rthLayer.getBounds(), { padding: [50, 50] });
+      }
+
+      updateLegend();
+    })
+    .catch(err => {
+      console.error('RTH_WGS gagal dimuat:', err);
+    });
+    
+// ============================================================
+// ICON TITIK RTH
+// ============================================================
+
+var rthIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+
+  iconSize: [28, 46],
+  iconAnchor: [14, 46],
+  popupAnchor: [1, -40],
+  shadowSize: [46, 46]
+});
+// --- TITIK RTH ---
+fetch('assets/RTH BDG.geojson')
+  .then(r => r.json())
+  .then(data => {
+
+    rthPointLayer = L.geoJSON(data, {
+
+      pointToLayer: function (feature, latlng) {
+        return L.marker(latlng, {
+          icon: rthIcon
+        });
+      },
+
+
+        onEachFeature: function (feature, layer) {
+          var p   = feature.properties;
+          var lat = layer.getLatLng().lat;
+          var lng = layer.getLatLng().lng;
+          var mapsLink = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+          var attrHTML = '';
+          for (var key in p) {
+            attrHTML += `<p style="margin:4px 0;"><b>${key}:</b> ${p[key]}</p>`;
+          }
+
+          layer.bindPopup(`
+            <div style="min-width:240px;font-family:Poppins,sans-serif;">
+              <h3 style="color:#0f5e3a;margin-bottom:10px;">🌳 Titik RTH Bandung</h3>
+              <hr>${attrHTML}
+              <p><b>Koordinat:</b><br>${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+              <a href="${mapsLink}" target="_blank"
+                style="display:block;margin-top:12px;background:#1877b7;color:white;
+                       text-align:center;padding:10px;border-radius:10px;
+                       text-decoration:none;font-weight:500;">
+                📍 Rute ke Lokasi
+              </a>
+            </div>
+          `);
+        }
+
+      });
+
+      syncLayer(rthPointLayer, 'chkPoint');
+      updateLegend();
+    })
+    .catch(err => {
+      console.error('RTH BDG gagal dimuat:', err);
+    });
+
+  // --- NDVI ---
+  fetch('assets/NDVI_WGS.geojson')
+    .then(r => r.json())
+    .then(data => {
+
+      ndviLayer = L.geoJSON(data, {
+
+        style: function (feature) {
+          return {
+            stroke: false,
+            fillColor: getColorNDVI(feature.properties.Vegetasi),
+            fillOpacity: 0.65
+          };
+        },
+
+        onEachFeature: function (feature, layer) {
+          var p = feature.properties;
+          layer.bindPopup(`
+            <div style="min-width:220px;font-family:Poppins,sans-serif;">
+              <h3 style="color:#2e7d32;margin-bottom:10px;">🌿 NDVI</h3><hr>
+              <p><b>ID:</b> ${p.Id || '-'}</p>
+              <p><b>Gridcode:</b> ${p.gridcode || '-'}</p>
+              <p><b>Kategori Vegetasi:</b> ${p.Vegetasi || '-'}</p>
+            </div>
+          `);
+        }
+
+      });
+
+      syncLayer(ndviLayer, 'chkNDVI');
+      updateLegend();
+    })
+    .catch(err => {
+      console.error('NDVI_WGS gagal dimuat:', err);
+    });
+
+  // --- SLOPE ---
+  fetch('assets/SLOPE_WGS.geojson')
+    .then(r => r.json())
+    .then(data => {
+
+      slopeLayer = L.geoJSON(data, {
+
+        style: function (feature) {
+          return {
+            color: 'transparent', weight: 0,
+            fillColor: getColorSlope(feature.properties.Kemiringan),
+            fillOpacity: 0.75
+          };
+        },
+
+        onEachFeature: function (feature, layer) {
+          var p = feature.properties;
+          layer.bindPopup(`
+            <b>Data Slope</b><hr>
+            <b>ID:</b> ${p.Id || '-'}<br>
+            <b>Gridcode:</b> ${p.gridcode || '-'}<br>
+            <b>Kemiringan:</b> ${p.Kemiringan || '-'}
+          `);
+        }
+
+      });
+
+      syncLayer(slopeLayer, 'chkSlope');
+      updateLegend();
+    })
+    .catch(err => {
+      console.error('SLOPE_WGS gagal dimuat:', err);
+    });
+
+  // --- THI ---
+  fetch('assets/THI_WGS.geojson')
+    .then(r => r.json())
+    .then(data => {
+
+      thiLayer = L.geoJSON(data, {
+
+        style: function (feature) {
+          return {
+            color: 'transparent', weight: 0,
+            fillColor: getColorTHI(feature.properties.Suhu),
+            fillOpacity: 0.75
+          };
+        },
+
+        onEachFeature: function (feature, layer) {
+          var p = feature.properties;
+          layer.bindPopup(`
+            <b>Data THI</b><hr>
+            <b>ID:</b> ${p.Id || '-'}<br>
+            <b>Gridcode:</b> ${p.gridcode || '-'}<br>
+            <b>Suhu:</b> ${p.Suhu || '-'}
+          `);
+        }
+
+      });
+
+      syncLayer(thiLayer, 'chkTHI');
+      updateLegend();
+    })
+    .catch(err => {
+      console.error('THI_WGS gagal dimuat:', err);
+    });
+
+  // ============================================================
+  // RADIUS SLIDER
+  // ============================================================
+
+  document.getElementById('radius').addEventListener('input', function () {
+    document.getElementById('radiusValue').textContent = this.value;
+  });
+
+  var radiusCircle = null;
+  var radiusMarker = null;
+  var pickMode     = false;
+
+  function getRadius() {
+    return document.getElementById('radius').value * 1000;
+  }
+
+  function findMyLocation() {
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      clearAnalysis();
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      radiusMarker = L.marker([lat, lng]).addTo(map).bindPopup('Lokasi Saya').openPopup();
+      radiusCircle = L.circle([lat, lng], {
+        radius: getRadius(), color: 'blue', fillOpacity: 0.2
+      }).addTo(map);
+      map.setView([lat, lng], 14);
+    }, function () {
+      alert('Tidak bisa mengakses lokasi. Pastikan izin lokasi diaktifkan.');
+    });
+  }
+
+  function enablePickMode() {
+    pickMode = true;
+    alert('Klik titik pada peta untuk menentukan pusat radius.');
+  }
+
+  function clearAnalysis() {
+    if (radiusCircle) { map.removeLayer(radiusCircle); radiusCircle = null; }
+    if (radiusMarker) { map.removeLayer(radiusMarker); radiusMarker = null; }
+  }
+
+// ============================================================
+// ROUTING
+// ============================================================
+
+var routingControl = null;
+var routeMode      = false;
+var routePoints    = [];
+var routeMarkers   = [];
+
+function enableRouting() {
+  routeMode = true;
+  routePoints = [];
+
+  // hapus marker lama
+  routeMarkers.forEach(marker => map.removeLayer(marker));
+  routeMarkers = [];
+
+  alert('Klik titik awal, lalu klik titik tujuan di peta.');
+}
+
+function clearRoute() {
+
+  if (routingControl) {
+    map.removeControl(routingControl);
+    routingControl = null;
+  }
+
+  // hapus marker awal & tujuan
+  routeMarkers.forEach(marker => map.removeLayer(marker));
+  routeMarkers = [];
+
+  routePoints = [];
+}
+
+  // ============================================================
+  // MAP CLICK — radius pick + routing dalam satu handler
+  // ============================================================
+
+  map.on('click', function (e) {
+
+    // --- Radius pick mode ---
+    if (pickMode) {
+      clearAnalysis();
+      radiusMarker = L.marker(e.latlng).addTo(map).bindPopup('Titik Analisis').openPopup();
+      radiusCircle = L.circle(e.latlng, {
+        radius: getRadius(), color: 'blue', fillOpacity: 0.2
+      }).addTo(map);
+      pickMode = false;
+      return;
+    }
+
+   // --- Routing mode ---
+if (routeMode) {
+
+  routePoints.push(e.latlng);
+
+  // Marker titik awal
+  if (routePoints.length === 1) {
+
+    const startMarker = L.marker(e.latlng)
+      .addTo(map)
+      .bindPopup('📍 Titik Awal')
+      .openPopup();
+
+    routeMarkers.push(startMarker);
+  }
+
+  // Marker titik tujuan
+  if (routePoints.length === 2) {
+
+    const endMarker = L.marker(e.latlng)
+      .addTo(map)
+      .bindPopup('🏁 Titik Tujuan')
+      .openPopup();
+
+    routeMarkers.push(endMarker);
+
+    if (routingControl) {
+      map.removeControl(routingControl);
+    }
+
+    routingControl = L.Routing.control({
+      waypoints: [routePoints[0], routePoints[1]],
+      routeWhileDragging: true
+    }).addTo(map);
+
+    routeMode = false;
+  }
+}
+
+  });
+// ============================================================
+// OPEN GOOGLE DRIVE GEOJSON
+// ============================================================
+
+function openGeoJSONDrive() {
+
+  window.open(
+    'https://drive.google.com/drive/folders/1Bd8W4PYgfFuccQJLQDITWflodN9LizMQ?usp=sharing',
+    '_blank'
+  );
+
+}
+
+// ============================================================
+// INFO MODAL
+// ============================================================
+
+function openInfo() {
+  document.getElementById('infoModal').style.display = 'flex';
+}
+
+function closeInfo() {
+  document.getElementById('infoModal').style.display = 'none';
+}
+
+</script>
+</body>
+</html>
