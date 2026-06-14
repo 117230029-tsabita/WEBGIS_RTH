@@ -24,7 +24,7 @@
       position: relative;
       height: 100vh;
       background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)),
-                  url('./assets/Kota-Bandung.jpeg');
+                  url('Kota-Bandung.jpeg');
       background-size: cover;
       background-position: center;
       display: flex;
@@ -306,7 +306,7 @@
 
   <div class="landing-header">
     <div class="landing-logo">
-      <img src="./assets/LOGOUPN.PNG">
+      <img src="LOGOUPN.PNG">
       <h2>WebGIS RTH Bandung</h2>
     </div>
     <div class="landing-nav">Kelompok 3 • Praktikum SIG Terapan</div>
@@ -332,7 +332,7 @@
 
 <div class="header">
 
-  <img src="./assets/BDG.png">
+  <img src="BDG.png">
 
   <h2>WebGIS RTH Kota Bandung</h2>
 
@@ -659,7 +659,7 @@
   // ============================================================
 
   // --- PRIORITAS RTH (Polygon) ---
-  fetch('assets/RTH_WGS.geojson')
+  fetch('RTH_WGS.geojson')
     .then(r => r.json())
     .then(data => {
 
@@ -722,7 +722,7 @@ var rthIcon = L.icon({
   shadowSize: [46, 46]
 });
 // --- TITIK RTH ---
-fetch('assets/RTH BDG.geojson')
+fetch('RTH BDG.geojson')
   .then(r => r.json())
   .then(data => {
 
@@ -771,7 +771,7 @@ fetch('assets/RTH BDG.geojson')
     });
 
   // --- NDVI ---
-  fetch('assets/NDVI_WGS.geojson')
+  fetch('NDVI_WGS.geojson')
     .then(r => r.json())
     .then(data => {
 
@@ -807,7 +807,7 @@ fetch('assets/RTH BDG.geojson')
     });
 
   // --- SLOPE ---
-  fetch('assets/SLOPE_WGS.geojson')
+  fetch('SLOPE_WGS.geojson')
     .then(r => r.json())
     .then(data => {
 
@@ -841,7 +841,7 @@ fetch('assets/RTH BDG.geojson')
     });
 
   // --- THI ---
-  fetch('assets/THI_WGS.geojson')
+  fetch('THI_WGS.geojson')
     .then(r => r.json())
     .then(data => {
 
