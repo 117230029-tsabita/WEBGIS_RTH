@@ -722,7 +722,7 @@ var rthIcon = L.icon({
   shadowSize: [46, 46]
 });
 // --- TITIK RTH ---
-fetch('RTH BDG.geojson')
+fetch('./RTH BDG.geojson')
   .then(r => r.json())
   .then(data => {
 
@@ -771,30 +771,33 @@ fetch('RTH BDG.geojson')
     });
 
   // --- NDVI ---
-fetch('./NDVI.json')
-  .then(response => {
-    console.log(response);
-    return response.json();
-  })
-  .then(data => {
-    console.log(data);
+ fetch('./NDVI_WGS.json')
+    .then(r => r.json())
+    .then(data => {
 
-    ndviLayer = L.geoJSON(data, {
-      style: function(feature) {
-        return {
-          stroke: false,
-          fillColor: getColorNDVI(feature.properties.Vegetasi),
-          fillOpacity: 0.65
-        };
-      }
-    });
+      ndviLayer = L.geoJSON(data, {
 
-    syncLayer(ndviLayer, 'chkNDVI');
-    updateLegend();
-  })
-  .catch(err => {
-    console.error('NDVI gagal dimuat:', err);
-  });
+        style: function (feature) {
+          return {
+            stroke: false,
+            fillColor: getColorNDVI(feature.properties.Vegetasi),
+            fillOpacity: 0.65
+          };
+        },
+
+        onEachFeature: function (feature, layer) {
+          var p = feature.properties;
+          layer.bindPopup(`
+            <div style="min-width:220px;font-family:Poppins,sans-serif;">
+              <h3 style="color:#2e7d32;margin-bottom:10px;">🌿 NDVI</h3><hr>
+              <p><b>ID:</b> ${p.Id || '-'}</p>
+              <p><b>Gridcode:</b> ${p.gridcode || '-'}</p>
+              <p><b>Kategori Vegetasi:</b> ${p.Vegetasi || '-'}</p>
+            </div>
+          `);
+        }
+
+      });
 
       syncLayer(ndviLayer, 'chkNDVI');
       updateLegend();
